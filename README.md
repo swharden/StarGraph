@@ -4,4 +4,6 @@
 
 > ⚠️ this image is not yet live
 
-![](dev/sample.png)
+<p align="center">
+  <img src="dev/sample.png">
+</p>
