@@ -76,7 +76,7 @@ namespace StarGraph
         private static int RateLimitReset(WebHeaderCollection headers) =>
             int.Parse(headers.GetValues("X-RateLimit-Reset").First());
 
-        private static int TotalStars(string json) =>
+        public static int TotalStars(string json) =>
             JsonDocument.Parse(json).RootElement.GetProperty("stargazers_count").GetInt32();
 
         private static DateTime CreationDate(string json) =>

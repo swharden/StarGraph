@@ -8,21 +8,59 @@ namespace StarGraph.Dev
 {
     class Program
     {
+        const string SecretsFilePath = "../../../../StarGraph.Functions/local.settings.json";
+
         static void Main()
         {
-            string secretsFilePath = Path.GetFullPath("../../../../StarGraph.Functions/local.settings.json");
-            string connectionString = JsonDocument.Parse(File.ReadAllText(secretsFilePath))
-                                                  .RootElement
-                                                  .GetProperty("Values")
-                                                  .GetProperty("AzureWebJobsStorage")
-                                                  .GetString();
-            var table = new Functions.StarsTable(connectionString);
-
-            //FillTableWithDataFromLog(table);
+            //FillTableWithDataFromLog();
+            //ViewCurrentStars();
+            AddCurrentStarsToTable();
         }
 
-        private static void FillTableWithDataFromLog(Functions.StarsTable table)
+        private static string GetConnectionString()
         {
+            string s = JsonDocument.Parse(File.ReadAllText(SecretsFilePath))
+                                   .RootElement
+                                   .GetProperty("Values")
+                                   .GetProperty("AzureWebJobsStorage")
+                                   .GetString();
+            if (s is null)
+                throw new InvalidOperationException("cannot locate connection string");
+            else
+                return s;
+        }
+
+        private static string GetGitHubToken()
+        {
+            string s = JsonDocument.Parse(File.ReadAllText(SecretsFilePath))
+                                   .RootElement
+                                   .GetProperty("Values")
+                                   .GetProperty("GitHubToken")
+                                   .GetString();
+
+            if (s is null)
+                throw new InvalidOperationException("cannot locate GitHub token");
+            else
+                return s;
+        }
+
+        private static void ViewCurrentStars()
+        {
+            (_, string json) = GitHubAPI.RequestRepo("scottplot", "scottplot", GetGitHubToken());
+            Console.WriteLine($"STARS: {GitHubAPI.TotalStars(json)}");
+        }
+
+        private static void AddCurrentStarsToTable()
+        {
+            (_, string json) = GitHubAPI.RequestRepo("scottplot", "scottplot", GetGitHubToken());
+            int stars = GitHubAPI.TotalStars(json);
+            Functions.StarsTable table = new Functions.StarsTable(GetConnectionString());
+            table.Insert("scottplot", "scottplot", stars, DateTime.Now);
+        }
+
+        private static void FillTableWithDataFromLog()
+        {
+            Functions.StarsTable table = new Functions.StarsTable(GetConnectionString());
             Dictionary<string, DateTime> gazerDates = GitHubAPI.GetGazerDatesFromLog("../../../data/gazerDates.csv");
             DateTime created = DateTime.Parse("2018-01-04T03:34:45Z").Date;
 

@@ -25,6 +25,6 @@ namespace StarGraph.Functions
             StarCount = starCount;
         }
 
-        public override string ToString() => $"[{Timestamp}]: {RepoUser}/{RepoName} has {StarCount} stars";
+        public override string ToString() => $"[{Date}]: {RepoUser}/{RepoName} has {StarCount} stars";
     }
 }
