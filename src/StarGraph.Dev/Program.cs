@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace StarGraph.Dev
 {
@@ -12,9 +13,10 @@ namespace StarGraph.Dev
 
         static void Main()
         {
-            //FillTableWithDataFromLog();
             //ViewCurrentStars();
-            AddCurrentStarsToTable();
+            //AddCurrentStarsToTable().GetAwaiter().GetResult();
+            //FillTableWithDataFromLog().GetAwaiter().GetResult();
+            Console.WriteLine("DONE");
         }
 
         private static string GetConnectionString()
@@ -50,15 +52,15 @@ namespace StarGraph.Dev
             Console.WriteLine($"STARS: {GitHubAPI.TotalStars(json)}");
         }
 
-        private static void AddCurrentStarsToTable()
+        private static async Task AddCurrentStarsToTable()
         {
             (_, string json) = GitHubAPI.RequestRepo("scottplot", "scottplot", GetGitHubToken());
             int stars = GitHubAPI.TotalStars(json);
             Functions.StarsTable table = new Functions.StarsTable(GetConnectionString());
-            table.Insert("scottplot", "scottplot", stars, DateTime.Now);
+            await table.Insert("scottplot", "scottplot", stars, DateTime.Now);
         }
 
-        private static void FillTableWithDataFromLog()
+        private static async Task FillTableWithDataFromLog()
         {
             Functions.StarsTable table = new Functions.StarsTable(GetConnectionString());
             Dictionary<string, DateTime> gazerDates = GitHubAPI.GetGazerDatesFromLog("../../../data/gazerDates.csv");
@@ -80,7 +82,7 @@ namespace StarGraph.Dev
             {
                 DateTime day = days[i];
                 int stars = totalStarsByDay[i];
-                table.Insert("scottplot", "scottplot", stars, day);
+                await table.Insert("scottplot", "scottplot", stars, day);
             }
         }
     }

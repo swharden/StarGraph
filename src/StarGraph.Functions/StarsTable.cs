@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
@@ -28,6 +29,8 @@ namespace StarGraph.Functions
         {
             Logger = log;
             string connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage", EnvironmentVariableTarget.Process);
+            if (connectionString is null)
+                throw new InvalidOperationException("null connection string");
             CloudStorageAccount cloudStorageAccount = CloudStorageAccount.Parse(connectionString);
             TableClient = cloudStorageAccount.CreateCloudTableClient();
             Table = TableClient.GetTableReference(TABLE_REFERENCE);
@@ -42,11 +45,11 @@ namespace StarGraph.Functions
             Table = tableClient.GetTableReference(TABLE_REFERENCE);
         }
 
-        public void Insert(string user, string repo, int count, DateTime timestamp)
+        public async Task Insert(string user, string repo, int count, DateTime timestamp)
         {
             StarsEntry entry = new StarsEntry(user, repo, count, timestamp);
             TableOperation operation = TableOperation.InsertOrMerge(entry);
-            Table.ExecuteAsync(operation);
+            await Table.ExecuteAsync(operation);
             Log($"Inserted: {entry}");
         }
     }
