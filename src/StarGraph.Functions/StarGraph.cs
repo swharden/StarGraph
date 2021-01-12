@@ -18,9 +18,7 @@ namespace StarGraph.Functions
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
-            //string csvPath = System.IO.Path.GetFullPath("../../../../StarGraph.Dev/data/gazerDates.csv");
-
-            //var stars = new StarsTable(log);
+            var stars = new StarsTable(log);
         }
     }
 }

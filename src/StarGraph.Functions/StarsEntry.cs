@@ -5,14 +5,20 @@ namespace StarGraph.Functions
 {
     public class StarsEntry : TableEntity
     {
-        public string RepoUser { get; private set; }
-        public string RepoName { get; private set; }
-        public int StarCount { get; private set; }
+        public string RepoUser { get; set; }
+        public string RepoName { get; set; }
+        public int StarCount { get; set; }
+        public DateTime Date { get; set; }
+
+        public StarsEntry()
+        {
+
+        }
 
         public StarsEntry(string userName, string repoName, int starCount, DateTime timestamp)
         {
             PartitionKey = "StarRecord";
-            Timestamp = timestamp;
+            Date = timestamp.Date;
             RowKey = Guid.NewGuid().ToString();
             RepoUser = userName;
             RepoName = repoName;

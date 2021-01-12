@@ -13,12 +13,30 @@ namespace StarGraph.Functions
     {
         private const string TABLE_REFERENCE = "githubStars";
         private readonly CloudTable Table;
-        private readonly ILogger Log;
+        private readonly CloudTableClient TableClient;
+        private readonly ILogger Logger;
+
+        private void Log(string message)
+        {
+            if (Logger is null)
+                Console.WriteLine(message);
+            else
+                Logger.LogInformation(message);
+        }
 
         public StarsTable(ILogger log)
         {
-            Log = log;
+            Logger = log;
             string connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage", EnvironmentVariableTarget.Process);
+            CloudStorageAccount cloudStorageAccount = CloudStorageAccount.Parse(connectionString);
+            TableClient = cloudStorageAccount.CreateCloudTableClient();
+            Table = TableClient.GetTableReference(TABLE_REFERENCE);
+            Log($"Connected to table {TABLE_REFERENCE}");
+        }
+
+        // this is just for development
+        public StarsTable(string connectionString)
+        {
             CloudStorageAccount cloudStorageAccount = CloudStorageAccount.Parse(connectionString);
             CloudTableClient tableClient = cloudStorageAccount.CreateCloudTableClient();
             Table = tableClient.GetTableReference(TABLE_REFERENCE);
@@ -29,7 +47,7 @@ namespace StarGraph.Functions
             StarsEntry entry = new StarsEntry(user, repo, count, timestamp);
             TableOperation operation = TableOperation.InsertOrMerge(entry);
             Table.ExecuteAsync(operation);
-            Log.LogInformation($"Inserted: {entry}");
+            Log($"Inserted: {entry}");
         }
     }
 }
