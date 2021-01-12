@@ -67,19 +67,19 @@ namespace StarGraph
             return gazerDates;
         }
 
-        private static int TotalPages(WebHeaderCollection headers) =>
+        public static int TotalPages(WebHeaderCollection headers) =>
             int.Parse(headers.GetValues("link").First().Split("?page=").Last().Split(">").First());
 
-        private static int RateLimitRemaining(WebHeaderCollection headers) =>
+        public static int RateLimitRemaining(WebHeaderCollection headers) =>
             int.Parse(headers.GetValues("X-RateLimit-Remaining").First());
 
-        private static int RateLimitReset(WebHeaderCollection headers) =>
+        public static int RateLimitReset(WebHeaderCollection headers) =>
             int.Parse(headers.GetValues("X-RateLimit-Reset").First());
 
         public static int TotalStars(string json) =>
             JsonDocument.Parse(json).RootElement.GetProperty("stargazers_count").GetInt32();
 
-        private static DateTime CreationDate(string json) =>
+        public static DateTime CreationDate(string json) =>
             JsonDocument.Parse(json).RootElement.GetProperty("created_at").GetDateTime();
 
         public static Dictionary<string, DateTime> GetGazerDatesFromLog(string filePath)

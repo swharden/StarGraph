@@ -16,6 +16,8 @@ namespace StarGraph.Dev
             //ViewCurrentStars();
             //AddCurrentStarsToTable().GetAwaiter().GetResult();
             //FillTableWithDataFromLog().GetAwaiter().GetResult();
+            //ReadAllRows();
+            //MakeGraph();
             Console.WriteLine("DONE");
         }
 
@@ -46,13 +48,13 @@ namespace StarGraph.Dev
                 return s;
         }
 
-        private static void ViewCurrentStars()
+        public static void ViewCurrentStars()
         {
             (_, string json) = GitHubAPI.RequestRepo("scottplot", "scottplot", GetGitHubToken());
             Console.WriteLine($"STARS: {GitHubAPI.TotalStars(json)}");
         }
 
-        private static async Task AddCurrentStarsToTable()
+        public static async Task AddCurrentStarsToTable()
         {
             (_, string json) = GitHubAPI.RequestRepo("scottplot", "scottplot", GetGitHubToken());
             int stars = GitHubAPI.TotalStars(json);
@@ -60,7 +62,7 @@ namespace StarGraph.Dev
             await table.Insert("scottplot", "scottplot", stars, DateTime.Now);
         }
 
-        private static async Task FillTableWithDataFromLog()
+        public static async Task FillTableWithDataFromLog()
         {
             Functions.StarsTable table = new Functions.StarsTable(GetConnectionString());
             Dictionary<string, DateTime> gazerDates = GitHubAPI.GetGazerDatesFromLog("../../../data/gazerDates.csv");
@@ -84,6 +86,15 @@ namespace StarGraph.Dev
                 int stars = totalStarsByDay[i];
                 await table.Insert("scottplot", "scottplot", stars, day);
             }
+        }
+
+        public static void MakeGraph()
+        {
+            var table = new Functions.StarsTable(GetConnectionString());
+            System.Drawing.Bitmap bmp = table.GetGraphBitmap();
+            string saveFilePath = Path.GetFullPath("test.png");
+            bmp.Save(saveFilePath, System.Drawing.Imaging.ImageFormat.Png);
+            Console.WriteLine($"Saved: {saveFilePath}");
         }
     }
 }
