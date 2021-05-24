@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace StarGraphTests
@@ -12,6 +13,13 @@ namespace StarGraphTests
             Path.Join(TestContext.CurrentContext.TestDirectory + "../../../../data");
 
         public static string GetStargazerPageJson() =>
-            File.ReadAllText(Path.Combine(GetDataFolder(), "stargazers-v3.json"));
+            File.ReadAllText(Path.Combine(GetDataFolder(), "stargazers-page-0001.json"));
+
+        public static StarGraph.StarRecord[] GetAllStargazers() =>
+            Directory
+            .GetFiles(GetDataFolder(), "stargazers-page-*.json")
+            .Select(x => File.ReadAllText(x))
+            .SelectMany(x => StarGraph.GitHubJSON.StarRecordsFromPage(x))
+            .ToArray();
     }
 }

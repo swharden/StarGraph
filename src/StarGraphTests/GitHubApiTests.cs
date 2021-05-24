@@ -8,7 +8,7 @@ namespace StarGraphTests
     public class GitHubApiTests
     {
         [Test]
-        public void Test_StargazersJson_CanBeParsed()
+        public void Test_StargazersJson_OneCanBeParsed()
         {
             string json = SampleData.GetStargazerPageJson();
             StarGraph.StarRecord[] records = StarGraph.GitHubJSON.StarRecordsFromPage(json);
@@ -16,6 +16,13 @@ namespace StarGraphTests
             Assert.AreEqual(30, records.Length);
             foreach (var record in records)
                 Console.WriteLine(record);
+        }
+
+        [Test]
+        public void Test_StargazersJson_AllCanBeParsed()
+        {
+            StarGraph.StarRecord[] records = SampleData.GetAllStargazers();
+            Assert.AreEqual(839, records.Length);
         }
 
         [Test]
@@ -36,6 +43,27 @@ namespace StarGraphTests
             Assert.AreEqual(30, records.Length);
             foreach (var record in records)
                 Console.WriteLine(record);
+        }
+
+        [Test]
+        [Ignore("Live HTTP tests disabled")]
+        public void Test_Http_DownloadPages()
+        {
+            // TODO: use a GitHub auth token to avoid rate limiting.
+            (_, int pageCount, int remaining) = StarGraph.GitHubAPI.RequestStargazerJson("scottplot", "scottplot");
+            Console.WriteLine($"{pageCount} pages and {remaining} remaining requests");
+            if (remaining <= pageCount)
+                throw new InvalidOperationException("not enough remaining requests to proceed");
+
+            for (int i = 0; i < pageCount; i++)
+            {
+                int page = i + 1;
+                string filename = $"stargazers-page-{page:0000}.json";
+                Console.WriteLine(filename);
+
+                (string json, _, _) = StarGraph.GitHubAPI.RequestStargazerJson("scottplot", "scottplot", page);
+                File.WriteAllText(filename, json);
+            }
         }
     }
 }

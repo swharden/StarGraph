@@ -12,10 +12,11 @@ namespace StarGraphTests
         [Test]
         public void Test_Plot_LooksGood()
         {
-            string json = SampleData.GetStargazerPageJson();
-            StarGraph.StarRecord[] records = StarGraph.GitHubJSON.StarRecordsFromPage(json);
+            StarGraph.StarRecord[] records = SampleData.GetAllStargazers();
             Bitmap bmp = StarGraph.Plot.MakePlot(records);
-            bmp.Save("test.png", ImageFormat.Png);
+            string filename = System.IO.Path.GetFullPath("test.png");
+            bmp.Save(filename, ImageFormat.Png);
+            Console.WriteLine($"Saved: {filename}");
         }
     }
 }
