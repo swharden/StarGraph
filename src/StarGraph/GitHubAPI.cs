@@ -8,16 +8,6 @@ namespace StarGraph
 {
     public static class GitHubAPI
     {
-        public static (string[] recentGazers, int stars) GetStarInfo(string user, string repo)
-        {
-            return (null, 123);
-        }
-
-        public static int GetStarPageCount(string user, string repo)
-        {
-            return -1;
-        }
-
         public static (string json, int pages, int remaining) RequestStargazerJson(string user, string repo, int page = 1, string token = null)
         {
             string url = $"https://api.github.com/repos/{user}/{repo}/stargazers?page={page}";
