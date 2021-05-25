@@ -37,11 +37,6 @@ namespace StarGraph
         }
 
         /// <summary>
-        /// Attempts to add the records from JSON (returns true if any were added)
-        /// </summary>
-        public bool TryAddFromJson(string json) => TryAdd(IO.RecordsFromJson(json));
-
-        /// <summary>
         /// Returns true if at least 1 record from the json already exists
         /// </summary>
         public bool HasDuplicates(StarRecord[] records)
