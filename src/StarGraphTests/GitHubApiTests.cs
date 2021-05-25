@@ -12,7 +12,7 @@ namespace StarGraphTests
         public void Test_StargazersJson_OneCanBeParsed()
         {
             string json = SampleData.GetStargazerPageJson();
-            StarGraph.StarRecord[] records = StarGraph.GitHubAPI.StarRecordsFromPage(json);
+            StarGraph.StarRecord[] records = StarGraph.GitHubAPI.StarRecordsFromPageJSON(json);
             Assert.IsNotEmpty(records);
             Assert.AreEqual(30, records.Length);
             foreach (var record in records)

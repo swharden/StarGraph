@@ -35,7 +35,7 @@ namespace StarGraphTests
             Console.WriteLine(stars.Count);
             Console.WriteLine(string.Join(", ", stars.GetSortedRecords().TakeLast(20).Select(x => x.User)));
 
-            stars.TryAddFromWeb();
+            stars.TryAddFromWebUntilDuplicate();
 
             Console.WriteLine(stars.Count);
             Console.WriteLine(string.Join(", ", stars.GetSortedRecords().TakeLast(20).Select(x => x.User)));

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace StarGraph
 {
@@ -61,11 +62,27 @@ namespace StarGraph
         }
 
         /// <summary>
-        /// Use the web API to top-off the list of known stargazers with new ones from the web
+        /// Request every stargazer page and add all stargazers seen.
+        /// </summary>
+        public void TryAddFromWebAllPages()
+        {
+            (_, int pageCount, int remaining) = GitHubAPI.RequestStargazersPage(UserName, RepoName, page: 1, token: GitHubToken);
+            var pageNumbers = Enumerable.Range(1, pageCount);
+            Parallel.ForEach(pageNumbers, pageNumber =>
+            {
+                (StarRecord[] records, _, _) = GitHubAPI.RequestStargazersPage(UserName, RepoName, page: pageNumber, token: GitHubToken);
+                TryAdd(GitHubAPI.RequestStargazersPage(UserName, RepoName, page: pageNumber, token: GitHubToken).records);
+            });
+        }
+
+        /// <summary>
+        /// This method is a cautious way to top-off the existing list of stargazers without making many API requests.
+        /// It works backwards from the last page and stops when it finds a duplicate.
+        /// This means only the last few pages may need to be inspected, but early stargazers who un-starred will be retained.
         /// </summary>
         /// <param name="maxRequestCount">throw an exception if this number of requests is exceeded</param>
         /// <param name="minRemainingRequests">throw an exception if the number of remaining requests is below this number</param>
-        public void TryAddFromWeb(int maxRequestCount = 50, int minRemainingRequests = 100)
+        public void TryAddFromWebUntilDuplicate(int maxRequestCount = 50, int minRemainingRequests = 100)
         {
             (_, int pages, int remaining) = GitHubAPI.RequestStargazersPage(UserName, RepoName, page: 1, token: GitHubToken);
             if (remaining <= minRemainingRequests)

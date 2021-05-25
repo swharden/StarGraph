@@ -14,63 +14,21 @@ namespace StarGraph
         [FunctionName("UpdateStarGraph")]
         public static void Run([TimerTrigger("0 0 * * * *")] TimerInfo myTimer, ILogger log)
         {
-            // connect to storage 
+            // load star records using the GitHub API and create a plot from them
+            string gitHubToken = Environment.GetEnvironmentVariable("github-token-starchart-readuser", EnvironmentVariableTarget.Process);
+            if (string.IsNullOrEmpty(gitHubToken))
+                throw new InvalidOperationException("github token not found");
+            StarRecord[] records = GitHubAPI.RequestAllStargazers("scottplot", "scottplot", gitHubToken);
+            byte[] imageBytes = Plot.GetPlotBytes(records);
+
+            // save the plot in blob storage
             string storageConnectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage", EnvironmentVariableTarget.Process);
             BlobContainerClient container = new(storageConnectionString, "$web");
-
-            // prepare the star manager
-            string githubToken = Environment.GetEnvironmentVariable("github-token-starchart-readuser", EnvironmentVariableTarget.Process);
-            if (string.IsNullOrEmpty(githubToken))
-                throw new InvalidOperationException("github token not found");
-            StarRecordManager stars = new("scottplot", "scottplot", githubToken);
-
-            // read known stars from JSON in blob storage
-            StarRecord[] knownStars = LoadStarRecords(container);
-            stars.TryAdd(knownStars);
-            Console.WriteLine($"loaded {stars.Count} stars from existing database");
-
-            // hit the GitHub API to learn of new stargazers
-            stars.TryAddFromWeb();
-            Console.WriteLine($"now aware of {stars.Count} stars after updating from GitHub");
-
-            // save the full list back to blob storage
-            SaveStarRecords(stars.GetSortedRecords(), container);
-
-            // plot the result and save it in blob storage
-            byte[] imageBytes = Plot.GetPlotBytes(stars.GetSortedRecords());
-            using var streamImage = new MemoryStream(imageBytes);
+            using var stream = new MemoryStream(imageBytes);
             BlobClient blobPlot = container.GetBlobClient("scottplot-stars.png");
-            blobPlot.Upload(streamImage, overwrite: true);
+            blobPlot.Upload(stream, overwrite: true);
             BlobHttpHeaders pngHeaders = new() { ContentType = "image/png", ContentLanguage = "en-us", };
             blobPlot.SetHttpHeaders(pngHeaders);
-        }
-
-        /// <summary>
-        /// Returns records stored in the database.
-        /// </summary>
-        private static StarRecord[] LoadStarRecords(BlobContainerClient container, string filename = "starRecords.json")
-        {
-            BlobClient blob = container.GetBlobClient(filename);
-            if (!blob.Exists())
-                throw new InvalidOperationException($"file not found: {filename}");
-            using MemoryStream stream = new();
-            blob.DownloadTo(stream);
-            string json = Encoding.UTF8.GetString(stream.ToArray());
-            StarRecord[] records = IO.RecordsFromJson(json);
-            return records;
-        }
-
-        /// <summary>
-        /// Saves records to the database.
-        /// </summary>
-        private static void SaveStarRecords(StarRecord[] records, BlobContainerClient container, string filename = "starRecords.json")
-        {
-            BlobClient blob = container.GetBlobClient(filename);
-            string json = IO.RecordsToJson(records);
-            byte[] bytes = Encoding.UTF8.GetBytes(json);
-            using var stream = new MemoryStream(bytes, writable: false);
-            blob.Upload(stream, overwrite: true);
-            stream.Close();
         }
     }
 }
