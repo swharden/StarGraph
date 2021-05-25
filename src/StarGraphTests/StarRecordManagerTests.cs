@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.Extensions.Configuration;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace StarGraphTests
         {
             StarGraph.StarRecord[] allRecords = SampleData.GetAllStargazers();
 
-            var stars = new StarGraph.StarRecordManager();
+            var stars = new StarGraph.StarRecordManager("scottplot", "scottplot", null);
             Assert.AreEqual(0, stars.Count);
 
             stars.TryAdd(allRecords.Take(100).ToArray());
@@ -21,6 +22,23 @@ namespace StarGraphTests
 
             stars.TryAdd(allRecords.Skip(50).Take(100).ToArray());
             Assert.AreEqual(150, stars.Count);
+        }
+
+        [Test]
+        [Ignore("Live HTTP tests disabled")]
+        public void Test_Http_TopOff()
+        {
+            StarGraph.StarRecord[] allRecords = SampleData.GetAllStargazers();
+            var stars = new StarGraph.StarRecordManager("scottplot", "scottplot", Authentication.GetGitHubAccessToken());
+            stars.TryAdd(allRecords);
+
+            Console.WriteLine(stars.Count);
+            Console.WriteLine(string.Join(", ", stars.GetSortedRecords().TakeLast(20).Select(x => x.User)));
+
+            stars.TryAddFromWeb();
+
+            Console.WriteLine(stars.Count);
+            Console.WriteLine(string.Join(", ", stars.GetSortedRecords().TakeLast(20).Select(x => x.User)));
         }
     }
 }

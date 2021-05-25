@@ -50,7 +50,6 @@ namespace StarGraphTests
         [Ignore("Live HTTP tests disabled")]
         public void Test_Http_DownloadPages()
         {
-            // TODO: use a GitHub auth token to avoid rate limiting.
             (_, int pageCount, int remaining) = StarGraph.GitHubAPI.RequestStargazerJson("scottplot", "scottplot");
             Console.WriteLine($"{pageCount} pages and {remaining} remaining requests");
             if (remaining <= pageCount)
@@ -71,12 +70,7 @@ namespace StarGraphTests
         [Ignore("Live HTTP tests disabled")]
         public void Test_Http_GitHubToken()
         {
-            var appConfig = new ConfigurationBuilder().AddUserSecrets<GitHubApiTests>().Build();
-            string token = appConfig["github-token-starchart-readuser"];
-            if (string.IsNullOrWhiteSpace(token))
-                throw new InvalidOperationException("token not found");
-
-            (_, _, int remaining) = StarGraph.GitHubAPI.RequestStargazerJson("scottplot", "scottplot", token: token);
+            (_, _, int remaining) = StarGraph.GitHubAPI.RequestStargazerJson("scottplot", "scottplot", token: Authentication.GetGitHubAccessToken());
             Console.WriteLine($"Remaining API requests: {remaining}");
             Assert.That(remaining > 100, "access token was wasn't accepted");
         }

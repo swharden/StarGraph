@@ -38,6 +38,10 @@ namespace StarGraph
             return bmp;
         }
 
-        public static byte[] BmpToBytes(Bitmap bmp) => (byte[])new ImageConverter().ConvertTo(bmp, typeof(byte[]));
+        public static byte[] GetPlotBytes(StarRecord[] records)
+        {
+            Bitmap bmp = MakePlot(records);
+            return (byte[])new ImageConverter().ConvertTo(bmp, typeof(byte[]));
+        }
     }
 }
