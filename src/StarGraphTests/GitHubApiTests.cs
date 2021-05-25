@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using System;
 using System.IO;
@@ -64,6 +65,20 @@ namespace StarGraphTests
                 (string json, _, _) = StarGraph.GitHubAPI.RequestStargazerJson("scottplot", "scottplot", page);
                 File.WriteAllText(filename, json);
             }
+        }
+
+        [Test]
+        [Ignore("Live HTTP tests disabled")]
+        public void Test_Http_GitHubToken()
+        {
+            var appConfig = new ConfigurationBuilder().AddUserSecrets<GitHubApiTests>().Build();
+            string token = appConfig["github-token-starchart-readuser"];
+            if (string.IsNullOrWhiteSpace(token))
+                throw new InvalidOperationException("token not found");
+
+            (_, _, int remaining) = StarGraph.GitHubAPI.RequestStargazerJson("scottplot", "scottplot", token: token);
+            Console.WriteLine($"Remaining API requests: {remaining}");
+            Assert.That(remaining > 100, "access token was wasn't accepted");
         }
     }
 }

@@ -26,6 +26,7 @@ namespace StarGraph
             WebRequest request = WebRequest.Create(url);
             request.Headers.Set("User-Agent", "request");
             request.Headers.Set("Accept", "application/vnd.github.v3.star+json");
+            request.Headers.Add("Authorization", $"Bearer {token}");
             var response = request.GetResponse();
 
             using var reader = new System.IO.StreamReader(response.GetResponseStream());
