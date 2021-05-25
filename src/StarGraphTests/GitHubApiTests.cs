@@ -12,7 +12,7 @@ namespace StarGraphTests
         public void Test_StargazersJson_OneCanBeParsed()
         {
             string json = SampleData.GetStargazerPageJson();
-            StarGraph.StarRecord[] records = StarGraph.GitHubJSON.StarRecordsFromPage(json);
+            StarGraph.StarRecord[] records = StarGraph.GitHubAPI.StarRecordsFromPage(json);
             Assert.IsNotEmpty(records);
             Assert.AreEqual(30, records.Length);
             foreach (var record in records)
@@ -30,16 +30,9 @@ namespace StarGraphTests
         [Ignore("Live HTTP tests disabled")]
         public void Test_Http_ReturnsJson()
         {
-            (string json, int pages, int remaining) = StarGraph.GitHubAPI.RequestStargazerJson("scottplot", "scottplot");
+            (StarGraph.StarRecord[] records, int pages, int remaining) = StarGraph.GitHubAPI.RequestStargazersPage("scottplot", "scottplot");
             Console.WriteLine($"Requests remaining: {remaining}");
             Console.WriteLine($"Stargazer page count: {pages}");
-
-            Assert.IsNotNull(json);
-            Assert.That(json.Contains("starred_at"));
-
-            Assert.GreaterOrEqual(pages, 1);
-
-            StarGraph.StarRecord[] records = StarGraph.GitHubJSON.StarRecordsFromPage(json);
             Assert.IsNotEmpty(records);
             Assert.AreEqual(30, records.Length);
             foreach (var record in records)
@@ -48,29 +41,9 @@ namespace StarGraphTests
 
         [Test]
         [Ignore("Live HTTP tests disabled")]
-        public void Test_Http_DownloadPages()
-        {
-            (_, int pageCount, int remaining) = StarGraph.GitHubAPI.RequestStargazerJson("scottplot", "scottplot");
-            Console.WriteLine($"{pageCount} pages and {remaining} remaining requests");
-            if (remaining <= pageCount)
-                throw new InvalidOperationException("not enough remaining requests to proceed");
-
-            for (int i = 0; i < pageCount; i++)
-            {
-                int page = i + 1;
-                string filename = $"stargazers-page-{page:0000}.json";
-                Console.WriteLine(filename);
-
-                (string json, _, _) = StarGraph.GitHubAPI.RequestStargazerJson("scottplot", "scottplot", page);
-                File.WriteAllText(filename, json);
-            }
-        }
-
-        [Test]
-        [Ignore("Live HTTP tests disabled")]
         public void Test_Http_GitHubToken()
         {
-            (_, _, int remaining) = StarGraph.GitHubAPI.RequestStargazerJson("scottplot", "scottplot", token: Authentication.GetGitHubAccessToken());
+            (_, _, int remaining) = StarGraph.GitHubAPI.RequestStargazersPage("scottplot", "scottplot", token: Authentication.GetGitHubAccessToken());
             Console.WriteLine($"Remaining API requests: {remaining}");
             Assert.That(remaining > 100, "access token was wasn't accepted");
         }

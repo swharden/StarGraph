@@ -19,7 +19,7 @@ namespace StarGraphTests
             Directory
             .GetFiles(GetDataFolder(), "stargazers-page-*.json")
             .Select(x => File.ReadAllText(x))
-            .SelectMany(x => StarGraph.GitHubJSON.StarRecordsFromPage(x))
+            .SelectMany(x => StarGraph.GitHubAPI.StarRecordsFromPage(x))
             .ToArray();
     }
 }

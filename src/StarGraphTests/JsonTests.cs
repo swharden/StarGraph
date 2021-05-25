@@ -9,7 +9,7 @@ namespace StarGraphTests
         public void Test_ToJson_DoesNotFail()
         {
             StarGraph.StarRecord[] records = SampleData.GetAllStargazers();
-            string json = StarGraph.GitHubJSON.RecordsToJson(records);
+            string json = StarGraph.IO.RecordsToJson(records);
             Console.WriteLine(json);
             Assert.IsNotNull(json);
             Assert.Greater(json.Length, 100);
@@ -19,9 +19,9 @@ namespace StarGraphTests
         public void Test_FromJson_MatchesToJson()
         {
             StarGraph.StarRecord[] records = SampleData.GetAllStargazers();
-            string json = StarGraph.GitHubJSON.RecordsToJson(records);
+            string json = StarGraph.IO.RecordsToJson(records);
 
-            StarGraph.StarRecord[] records2 = StarGraph.GitHubJSON.RecordsFromJson(json);
+            StarGraph.StarRecord[] records2 = StarGraph.IO.RecordsFromJson(json);
             Assert.IsNotNull(records2);
             Assert.AreEqual(records.Length, records2.Length);
 

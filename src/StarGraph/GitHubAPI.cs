@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 
 namespace StarGraph
 {
     public static class GitHubAPI
     {
-        public static (string json, int pages, int remaining) RequestStargazerJson(string user, string repo, int page = 1, string token = null)
+        public static (StarRecord[] records, int pages, int remaining) RequestStargazersPage(string user, string repo, int page = 1, string token = null)
         {
             string url = $"https://api.github.com/repos/{user}/{repo}/stargazers?page={page}";
 
@@ -17,15 +18,27 @@ namespace StarGraph
             request.Headers.Set("User-Agent", "request");
             request.Headers.Set("Accept", "application/vnd.github.v3.star+json");
             request.Headers.Add("Authorization", $"Bearer {token}");
+
             var response = request.GetResponse();
-
-            using var reader = new System.IO.StreamReader(response.GetResponseStream());
-            string json = reader.ReadToEnd();
-
             int pages = int.Parse(response.Headers.GetValues("Link").First().Split("?page=").Last().Split(">").First());
             int remaining = int.Parse(response.Headers.GetValues("X-RateLimit-Remaining").First());
+            using var responseReader = new System.IO.StreamReader(response.GetResponseStream());
+            string responseText = responseReader.ReadToEnd();
+            StarRecord[] records = StarRecordsFromPage(responseText);
 
-            return (json, pages, remaining);
+            return (records, pages, remaining);
+        }
+
+        public static StarRecord[] StarRecordsFromPage(string stargazersPageJson)
+        {
+            using JsonDocument document = JsonDocument.Parse(stargazersPageJson);
+            return document.RootElement.EnumerateArray()
+                .Select(x => new StarRecord()
+                {
+                    DateTime = DateTime.Parse(x.GetProperty("starred_at").GetString()),
+                    User = x.GetProperty("user").GetProperty("login").GetString()
+                })
+                .ToArray();
         }
     }
 }

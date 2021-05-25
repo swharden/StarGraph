@@ -7,20 +7,8 @@ using System.Text.Json;
 
 namespace StarGraph
 {
-    public static class GitHubJSON
+    public static class IO
     {
-        public static StarRecord[] StarRecordsFromPage(string stargazersPageJson)
-        {
-            using JsonDocument document = JsonDocument.Parse(stargazersPageJson);
-            return document.RootElement.EnumerateArray()
-                .Select(x => new StarRecord()
-                {
-                    DateTime = DateTime.Parse(x.GetProperty("starred_at").GetString()),
-                    User = x.GetProperty("user").GetProperty("login").GetString()
-                })
-                .ToArray();
-        }
-
         public static string RecordsToJson(StarRecord[] records, bool indented = false)
         {
             using var stream = new MemoryStream();

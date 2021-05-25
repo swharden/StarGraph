@@ -39,7 +39,7 @@ namespace StarGraph
         /// <summary>
         /// Attempts to add the records from JSON (returns true if any were added)
         /// </summary>
-        public bool TryAddFromJson(string json) => TryAdd(GitHubJSON.RecordsFromJson(json));
+        public bool TryAddFromJson(string json) => TryAdd(IO.RecordsFromJson(json));
 
         /// <summary>
         /// Returns true if at least 1 record from the json already exists
@@ -72,7 +72,7 @@ namespace StarGraph
         /// <param name="minRemainingRequests">throw an exception if the number of remaining requests is below this number</param>
         public void TryAddFromWeb(int maxRequestCount = 50, int minRemainingRequests = 100)
         {
-            (_, int pages, int remaining) = GitHubAPI.RequestStargazerJson(UserName, RepoName, page: 1, token: GitHubToken);
+            (_, int pages, int remaining) = GitHubAPI.RequestStargazersPage(UserName, RepoName, page: 1, token: GitHubToken);
             if (remaining <= minRemainingRequests)
                 throw new InvalidOperationException($"too few requests remaining ({remaining})");
 
@@ -83,8 +83,7 @@ namespace StarGraph
                 if (requestCount > maxRequestCount)
                     throw new InvalidOperationException($"too many requets without a duplicate ({requestCount})");
 
-                (string json, _, _) = GitHubAPI.RequestStargazerJson(UserName, RepoName, page: pages - i, token: GitHubToken);
-                StarRecord[] newRecords = GitHubJSON.StarRecordsFromPage(json);
+                (StarRecord[] newRecords, _, _) = GitHubAPI.RequestStargazersPage(UserName, RepoName, page: pages - i, token: GitHubToken);
 
                 bool duplicates = HasDuplicates(newRecords);
                 TryAdd(newRecords);
