@@ -21,10 +21,10 @@ namespace StarGraph
                 .ToArray();
         }
 
-        public static string RecordsToJson(StarRecord[] records)
+        public static string RecordsToJson(StarRecord[] records, bool indented = false)
         {
             using var stream = new MemoryStream();
-            var options = new JsonWriterOptions() { Indented = true };
+            var options = new JsonWriterOptions() { Indented = indented };
             using var writer = new Utf8JsonWriter(stream, options);
 
             writer.WriteStartObject();

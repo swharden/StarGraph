@@ -1,11 +1,11 @@
 # StarGraph
 
-**StarGraph uses Azure Functions to automatically generate graphs of GitHub stars over time** and save them as web-accessible static images that can be displayed inside GitHub readme pages.
+**StarGraph uses Azure Functions to automatically generate graphs of GitHub stars over time** and save them as static images that can be displayed inside GitHub readme pages. 
 
-## Live Demo
+StarGraph uses the GitHub API to retrieve stargazer timestamps, store records in Azure blob storage (minimizing the number of API requests), create a plot of historical stars using ScottPlot, then save the result in an Azure blob storage container that has a web-accessible URL.
 
-This graph is automatically updated once per day
+## Live Demo ([ScottPlot](https://github.com/ScottPlot/ScottPlot))
 
 <p align="center">
-  <img src="https://swhardendev.z13.web.core.windows.net/packagestats/scottplot-stars.png">
+  <img src="https://stargraph.z20.web.core.windows.net/scottplot-stars.png">
 </p>

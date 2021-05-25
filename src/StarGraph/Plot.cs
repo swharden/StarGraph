@@ -37,5 +37,7 @@ namespace StarGraph
             Bitmap bmp = plt.Render();
             return bmp;
         }
+
+        public static byte[] BmpToBytes(Bitmap bmp) => (byte[])new ImageConverter().ConvertTo(bmp, typeof(byte[]));
     }
 }
